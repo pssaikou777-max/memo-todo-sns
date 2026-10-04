@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}ホーム{% endblock %}
+{% block content %}
+
+<!-- ① 今日のTODO -->
+{% if today_todos %}
+<p class="section-title">今日やること</p>
+<div style="margin-bottom:16px">
+  {% for t in today_todos %}
+  <div class="todo-item">
+    <form method="post" action="{{ url_for('todos.complete', todo_id=t.id) }}">
+      <button type="submit" class="todo-check" title="完了にする"></button>
+    </form>
+    <div>
+      <div class="todo-title">{{ t.title }}</div>
+      {% if t.due_date %}<div class="todo-due">{{ t.due_date.strftime('%m/%d') }}</div>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ② 再発見 -->
+{% if rediscover %}
+<p class="section-title">今日の再発見</p>
+{% for memo in rediscover %}
+<a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="text-decoration:none">
+  <div class="card">
+    <div class="card-meta" style="margin-bottom:4px">
+      {{ memo.created_at.strftime('%Y/%m/%d') }} 保存
+    </div>
+    <div class="card-title">{{ memo.display_title }}</div>
+    {% if memo.body %}
+    <div class="card-body">{{ memo.body[:80] }}</div>
+    {% endif %}
+    {% set thumb = memo.images.first() %}
+    {% if thumb %}
+    <div class="thumb-row">
+      <img src="{{ url_for('static', filename='uploads/' ~ thumb.thumb_name) }}"
+           alt="画像" loading="lazy">
+    </div>
+    {% endif %}
+  </div>
+</a>
+{% endfor %}
+{% endif %}
+
+<!-- ③ 友達の公開メモ -->
+{% if friends_memos %}
+<p class="section-title">友達の投稿</p>
+{% for memo in friends_memos %}
+<div class="card">
+  <div class="card-meta" style="margin-bottom:4px">
+    {{ memo.owner.username }} ・ {{ memo.updated_at.strftime('%m/%d') }}
+  </div>
+  <div class="card-title">{{ memo.display_title }}</div>
+  {% if memo.body %}
+  <div class="card-body">{{ memo.body[:80] }}</div>
+  {% endif %}
+  {% set thumb = memo.images.first() %}
+  {% if thumb %}
+  <div class="thumb-row">
+    <img src="{{ url_for('static', filename='uploads/' ~ thumb.thumb_name) }}"
+         alt="画像" loading="lazy">
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- ④ 最近保存したメモ -->
+{% if recent_memos %}
+<p class="section-title">最近保存したメモ</p>
+{% for memo in recent_memos %}
+<a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="text-decoration:none">
+  <div class="card">
+    <div class="card-title">{{ memo.display_title }}</div>
+    {% if memo.body %}<div class="card-body">{{ memo.body[:60] }}</div>{% endif %}
+    <div class="card-meta">{{ memo.updated_at.strftime('%m/%d %H:%M') }}</div>
+  </div>
+</a>
+{% endfor %}
+{% endif %}
+
+{% if not today_todos and not rediscover and not friends_memos and not recent_memos %}
+<div class="empty-state">
+  <p>まずメモを保存してみましょう</p>
+  <a href="{{ url_for('memos.new') }}" class="btn btn-primary" style="margin-top:16px">
+    メモを作成
+  </a>
+</div>
+{% endif %}
+
+<!-- FAB -->
+<a href="{{ url_for('memos.new') }}" class="fab" title="メモを作成">＋</a>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}メモ一覧{% endblock %}
+{% block content %}
+
+<!-- フォルダフィルター -->
+<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 0">
+  <a href="{{ url_for('memos.list_memos') }}"
+     class="chip {{ 'active' if not cur_folder }}">すべて</a>
+  {% for f in folders %}
+  <a href="{{ url_for('memos.list_memos', folder_id=f.id) }}"
+     class="chip {{ 'active' if cur_folder and cur_folder.id == f.id }}">
+    📁 {{ f.name }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- 検索 -->
+<form method="get" class="search-bar">
+  {% if cur_folder %}<input type="hidden" name="folder_id" value="{{ cur_folder.id }}">{% endif %}
+  <input type="search" name="q" value="{{ q }}" placeholder="タイトル・本文で検索">
+  <button type="submit">検索</button>
+</form>
+
+<!-- 一覧 -->
+{% if memos %}
+{% for memo in memos %}
+<a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="text-decoration:none">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div class="card-title" style="flex:1">{{ memo.display_title }}</div>
+      <span class="vis-badge vis-{{ memo.visibility }}" style="margin-left:6px;flex-shrink:0">
+        {{ '自分のみ' if memo.visibility == 'private' else ('友達' if memo.visibility == 'friends' else '公開') }}
+      </span>
+    </div>
+    {% if memo.body %}<div class="card-body">{{ memo.body[:60] }}</div>{% endif %}
+    {% set thumb = memo.images.first() %}
+    {% if thumb %}
+    <div class="thumb-row">
+      <img src="{{ url_for('static', filename='uploads/' ~ thumb.thumb_name) }}"
+           alt="画像" loading="lazy">
+    </div>
+    {% endif %}
+    <div class="card-meta">
+      {{ memo.updated_at.strftime('%Y/%m/%d') }}
+      {% if memo.folder %}・{{ memo.folder.name }}{% endif %}
+    </div>
+  </div>
+</a>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <p>{% if q %}「{{ q }}」に一致するメモがありません{% else %}メモがまだありません{% endif %}</p>
+</div>
+{% endif %}
+
+<a href="{{ url_for('memos.new') }}" class="fab" title="メモを作成">＋</a>
+{% endblock %}

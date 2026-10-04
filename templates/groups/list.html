@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}グループ{% endblock %}
+{% block content %}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h1 style="font-size:1.1rem;font-weight:700">グループ</h1>
+  <a href="{{ url_for('groups.new') }}" class="btn btn-primary btn-sm">+ 新規</a>
+</div>
+
+{% if groups %}
+{% for g in groups %}
+<div class="card" style="display:flex;align-items:center;justify-content:space-between">
+  <a href="{{ url_for('groups.detail', group_id=g.id) }}"
+     style="text-decoration:none;color:inherit;flex:1">
+    <div style="font-size:.95rem;font-weight:600">{{ g.name }}</div>
+    <div style="font-size:.78rem;color:var(--c-sub)">{{ g.memos|length }} 件のメモ</div>
+  </a>
+  <div style="display:flex;gap:8px;margin-left:12px">
+    <a href="{{ url_for('groups.edit', group_id=g.id) }}" class="btn btn-ghost btn-sm">編集</a>
+    <form method="post" action="{{ url_for('groups.delete', group_id=g.id) }}"
+          onsubmit="return confirm('グループを削除しますか？（メモは削除されません）')">
+      <button type="submit" class="btn btn-ghost btn-sm">削除</button>
+    </form>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <p>グループがまだありません</p>
+</div>
+{% endif %}
+
+{% endblock %}

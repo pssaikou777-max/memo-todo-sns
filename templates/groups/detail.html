@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+  <a href="{{ url_for('groups.list_groups') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← グループ</a>
+  <h1 style="font-size:1rem;font-weight:700">{{ group.name }}</h1>
+  <a href="{{ url_for('groups.edit', group_id=group.id) }}" class="btn btn-ghost btn-sm">編集</a>
+</div>
+
+<p style="font-size:.8rem;color:var(--c-sub);margin-bottom:16px">{{ memos|length }} 件のメモ</p>
+
+{% if memos %}
+{% for memo in memos %}
+<a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="text-decoration:none">
+  <div class="card">
+    <div class="card-title">{{ memo.display_title }}</div>
+    {% if memo.body %}<div class="card-body">{{ memo.body[:60] }}</div>{% endif %}
+    <div class="card-meta">{{ memo.updated_at.strftime('%Y/%m/%d') }}</div>
+  </div>
+</a>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <p>このグループにメモがありません</p>
+  <a href="{{ url_for('memos.new') }}" class="btn btn-primary" style="margin-top:16px">メモを作成</a>
+</div>
+{% endif %}
+
+{% endblock %}

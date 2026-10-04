@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}新規登録{% endblock %}
+{% block content %}
+<div style="max-width:360px;margin:32px auto">
+  <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:24px;text-align:center">
+    メモ×todo×sns 新規登録
+  </h1>
+  <form method="post">
+    <div class="form-group">
+      <label for="username">ユーザー名</label>
+      <input class="form-control" type="text" id="username" name="username" required
+             autocomplete="username" maxlength="64">
+    </div>
+    <div class="form-group">
+      <label for="email">メールアドレス</label>
+      <input class="form-control" type="email" id="email" name="email" required
+             autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="password">パスワード</label>
+      <input class="form-control" type="password" id="password" name="password" required
+             autocomplete="new-password" minlength="6">
+    </div>
+    <div class="form-group">
+      <label for="confirm">パスワード（確認）</label>
+      <input class="form-control" type="password" id="confirm" name="confirm" required
+             autocomplete="new-password" minlength="6">
+    </div>
+    <button type="submit" class="btn btn-primary btn-full">登録する</button>
+  </form>
+  <p style="text-align:center;margin-top:16px;font-size:.85rem;color:var(--c-sub)">
+    すでにアカウントをお持ちの方は
+    <a href="{{ url_for('auth.login') }}" style="color:var(--c-accent)">ログイン</a>
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}検索{% endblock %}
+{% block content %}
+
+<h1 style="font-size:1.1rem;font-weight:700;margin-bottom:12px">検索</h1>
+
+<form method="get" class="search-bar" style="margin-bottom:20px">
+  <input type="search" name="q" value="{{ q }}" placeholder="メモ・TODOをキーワードで検索" autofocus>
+  <button type="submit">検索</button>
+</form>
+
+{% if q %}
+
+  <!-- メモ結果 -->
+  <p class="section-title">メモ（{{ memo_results|length }}件）</p>
+  {% if memo_results %}
+    {% for memo in memo_results %}
+    <a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="text-decoration:none">
+      <div class="card">
+        <div class="card-title">{{ memo.display_title }}</div>
+        {% if memo.body %}<div class="card-body">{{ memo.body[:80] }}</div>{% endif %}
+        <div class="card-meta">{{ memo.updated_at.strftime('%Y/%m/%d') }}{% if memo.folder %} · {{ memo.folder.name }}{% endif %}</div>
+      </div>
+    </a>
+    {% endfor %}
+  {% else %}
+    <p style="font-size:.875rem;color:var(--c-sub);padding:8px 0">該当なし</p>
+  {% endif %}
+
+  <!-- TODO結果 -->
+  <p class="section-title" style="margin-top:16px">TODO（{{ todo_results|length }}件）</p>
+  {% if todo_results %}
+    {% for t in todo_results %}
+    <a href="{{ url_for('todos.edit', todo_id=t.id) }}" style="text-decoration:none">
+      <div class="card">
+        <div class="card-title" style="{{ 'text-decoration:line-through;opacity:.6' if t.completed }}">{{ t.title }}</div>
+        {% if t.description %}<div class="card-body">{{ t.description[:80] }}</div>{% endif %}
+        <div class="card-meta">
+          {% if t.due_date %}期限 {{ t.due_date.strftime('%Y/%m/%d') }} · {% endif %}
+          {{ '完了' if t.completed else '未完了' }}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  {% else %}
+    <p style="font-size:.875rem;color:var(--c-sub);padding:8px 0">該当なし</p>
+  {% endif %}
+
+{% else %}
+<div class="empty-state">
+  <p>キーワードを入力してください</p>
+</div>
+{% endif %}
+
+{% endblock %}

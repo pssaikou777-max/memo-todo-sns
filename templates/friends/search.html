@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}友達を探す{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+  <a href="{{ url_for('friends.list_friends') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 友達</a>
+  <h1 style="font-size:1rem;font-weight:700">友達を探す</h1>
+</div>
+
+<form method="get" class="search-bar">
+  <input type="search" name="q" value="{{ q }}" placeholder="ユーザー名 or メールアドレス">
+  <button type="submit">検索</button>
+</form>
+
+{% if q %}
+  {% if results %}
+  <p class="section-title">検索結果 {{ results|length }}件</p>
+  {% for u in results %}
+  <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-weight:600">{{ u.username }}</div>
+      <div style="font-size:.75rem;color:var(--c-sub)">{{ u.email }}</div>
+    </div>
+    <form method="post" action="{{ url_for('friends.send_request', user_id=u.id) }}">
+      <button type="submit" class="btn btn-primary btn-sm">申請</button>
+    </form>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    <p>「{{ q }}」に一致するユーザーが見つかりません</p>
+  </div>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

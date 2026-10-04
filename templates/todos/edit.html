@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ 'TODO編集' if todo else 'TODO追加' }}{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+  {% if memo %}
+  <a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← メモに戻る</a>
+  {% else %}
+  <a href="{{ url_for('todos.list_todos') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← TODO</a>
+  {% endif %}
+  <h1 style="font-size:1rem;font-weight:700">{{ 'TODO編集' if todo else 'TODO追加' }}</h1>
+</div>
+
+{% if memo %}
+<div style="background:var(--c-surface);border:1px solid var(--c-border);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:.85rem;color:var(--c-sub)">
+  メモ「{{ memo.display_title }}」からTODOを作成
+</div>
+{% endif %}
+
+<form method="post">
+  {% if memo %}
+  <input type="hidden" name="from_memo_id" value="{{ memo.id }}">
+  {% endif %}
+  <div class="form-group">
+    <label for="title">タイトル</label>
+    <input class="form-control" type="text" id="title" name="title"
+           value="{{ todo.title if todo else (memo.display_title if memo else '') }}"
+           required maxlength="200">
+  </div>
+  <div class="form-group">
+    <label for="description">詳細（任意）</label>
+    <textarea class="form-control" id="description" name="description"
+              style="min-height:80px">{{ todo.description or '' if todo else '' }}</textarea>
+  </div>
+  <div class="form-group">
+    <label for="due_date">期限（任意）</label>
+    <input class="form-control" type="date" id="due_date" name="due_date"
+           value="{{ todo.due_date.isoformat() if todo and todo.due_date else '' }}">
+  </div>
+  <button type="submit" class="btn btn-primary btn-full">
+    {{ '更新する' if todo else '追加する' }}
+  </button>
+</form>
+
+{% endblock %}

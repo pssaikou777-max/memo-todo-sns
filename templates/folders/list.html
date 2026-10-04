@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}フォルダ{% endblock %}
+{% block content %}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h1 style="font-size:1.1rem;font-weight:700">フォルダ</h1>
+  <a href="{{ url_for('folders.new') }}" class="btn btn-primary btn-sm">+ 新規</a>
+</div>
+
+{% if folders %}
+{% for f in folders %}
+<div class="card" style="display:flex;align-items:center;justify-content:space-between">
+  <a href="{{ url_for('memos.list_memos', folder_id=f.id) }}"
+     style="text-decoration:none;color:inherit;flex:1">
+    <div style="font-size:.95rem;font-weight:600">{{ f.name }}</div>
+    <div style="font-size:.78rem;color:var(--c-sub)">{{ f.memos.count() }} 件</div>
+  </a>
+  <div style="display:flex;gap:8px;margin-left:12px">
+    <a href="{{ url_for('folders.edit', folder_id=f.id) }}" class="btn btn-ghost btn-sm">編集</a>
+    <form method="post" action="{{ url_for('folders.delete', folder_id=f.id) }}"
+          onsubmit="return confirm('フォルダを削除しますか？（メモは削除されません）')">
+      <button type="submit" class="btn btn-ghost btn-sm">削除</button>
+    </form>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <p>フォルダがまだありません</p>
+</div>
+{% endif %}
+
+{% endblock %}

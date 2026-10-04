@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ memo.display_title }}{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+  <a href="{{ url_for('memos.list_memos') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 一覧</a>
+  <span class="vis-badge vis-{{ memo.visibility }}">
+    {{ '自分のみ' if memo.visibility == 'private' else ('友達' if memo.visibility == 'friends' else '公開') }}
+  </span>
+</div>
+
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:8px">{{ memo.display_title }}</h1>
+
+{% if memo.folder %}
+<p style="font-size:.8rem;color:var(--c-sub);margin-bottom:8px">{{ memo.folder.name }}</p>
+{% endif %}
+
+{% if memo.groups.count() > 0 %}
+<div style="margin-bottom:8px">
+  {% for g in memo.groups %}
+  <span class="chip">{{ g.name }}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
+<p style="font-size:.78rem;color:var(--c-sub);margin-bottom:16px">
+  {{ memo.updated_at.strftime('%Y/%m/%d %H:%M') }}
+</p>
+
+{% if memo.body %}
+<div style="white-space:pre-wrap;font-size:.95rem;line-height:1.7;margin-bottom:20px">{{ memo.body }}</div>
+{% endif %}
+
+<!-- 画像 -->
+{% if memo.images.count() > 0 %}
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+  {% for img in memo.images %}
+  <div style="position:relative">
+    <img src="{{ url_for('static', filename='uploads/' ~ img.filename) }}"
+         alt="画像"
+         style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--c-border)"
+         loading="lazy">
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- 操作ボタン -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+  <a href="{{ url_for('memos.edit', memo_id=memo.id) }}" class="btn btn-ghost">編集</a>
+  <a href="{{ url_for('todos.new', from_memo=memo.id) }}" class="btn btn-ghost">TODOにする</a>
+  <form method="post" action="{{ url_for('memos.delete', memo_id=memo.id) }}"
+        onsubmit="return confirm('このメモを削除しますか？')">
+    <button type="submit" class="btn btn-danger btn-sm">削除</button>
+  </form>
+</div>
+
+{% endblock %}

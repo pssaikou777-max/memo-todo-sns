@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}TODO{% endblock %}
+{% block content %}
+
+<h1 style="font-size:1.1rem;font-weight:700;margin-bottom:16px">TODO</h1>
+
+{% macro todo_row(t) %}
+<div class="todo-item">
+  <form method="post" action="{{ url_for('todos.complete', todo_id=t.id) }}">
+    <button type="submit" class="todo-check" title="完了にする"></button>
+  </form>
+  <div style="flex:1">
+    <div class="todo-title">
+      <a href="{{ url_for('todos.edit', todo_id=t.id) }}"
+         style="text-decoration:none;color:inherit">{{ t.title }}</a>
+    </div>
+    {% if t.due_date %}
+    <div class="todo-due {{ 'overdue' if t.due_date < today }}">
+      {{ t.due_date.strftime('%Y/%m/%d') }}
+    </div>
+    {% endif %}
+  </div>
+  <form method="post" action="{{ url_for('todos.delete', todo_id=t.id) }}"
+        onsubmit="return confirm('削除しますか？')">
+    <button type="submit" class="btn btn-ghost btn-sm">🗑</button>
+  </form>
+</div>
+{% endmacro %}
+
+{% if overdue_todos %}
+<p class="section-title" style="color:var(--c-danger)">期限切れ</p>
+<div style="margin-bottom:16px">
+  {% for t in overdue_todos %}{{ todo_row(t) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if today_todos %}
+<p class="section-title">今日</p>
+<div style="margin-bottom:16px">
+  {% for t in today_todos %}{{ todo_row(t) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if week_todos %}
+<p class="section-title">今後</p>
+<div style="margin-bottom:16px">
+  {% for t in week_todos %}{{ todo_row(t) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if nodate_todos %}
+<p class="section-title">期限なし</p>
+<div style="margin-bottom:16px">
+  {% for t in nodate_todos %}{{ todo_row(t) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if not overdue_todos and not today_todos and not week_todos and not nodate_todos %}
+<div class="empty-state">
+  <p>TODOがありません</p>
+</div>
+{% endif %}
+
+{% if done_todos %}
+<p class="section-title">完了済み（直近20件）</p>
+<div style="margin-bottom:16px">
+  {% for t in done_todos %}
+  <div class="todo-item" style="opacity:.55">
+    <form method="post" action="{{ url_for('todos.uncomplete', todo_id=t.id) }}">
+      <button type="submit" class="todo-check done" title="未完了に戻す"></button>
+    </form>
+    <div style="flex:1">
+      <div class="todo-title" style="text-decoration:line-through">{{ t.title }}</div>
+    </div>
+    <form method="post" action="{{ url_for('todos.delete', todo_id=t.id) }}"
+          onsubmit="return confirm('削除しますか？')">
+      <button type="submit" class="btn btn-ghost btn-sm">🗑</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<a href="{{ url_for('todos.new') }}" class="fab" title="TODOを追加">＋</a>
+{% endblock %}

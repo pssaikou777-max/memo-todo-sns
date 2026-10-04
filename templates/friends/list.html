@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}友達{% endblock %}
+{% block content %}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h1 style="font-size:1.1rem;font-weight:700">友達</h1>
+  <a href="{{ url_for('friends.search') }}" class="btn btn-primary btn-sm">探す</a>
+</div>
+
+<!-- 受信中の申請 -->
+{% if pending_in %}
+<p class="section-title">申請が届いています</p>
+{% for f in pending_in %}
+<div class="card" style="display:flex;align-items:center;justify-content:space-between">
+  <div>
+    <div style="font-weight:600">{{ f.requester.username }}</div>
+    <div style="font-size:.75rem;color:var(--c-sub)">{{ f.requester.email }}</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <form method="post" action="{{ url_for('friends.accept', friendship_id=f.id) }}">
+      <button type="submit" class="btn btn-primary btn-sm">承認</button>
+    </form>
+    <form method="post" action="{{ url_for('friends.reject', friendship_id=f.id) }}">
+      <button type="submit" class="btn btn-ghost btn-sm">拒否</button>
+    </form>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- 送信中の申請 -->
+{% if pending_out %}
+<p class="section-title">申請中</p>
+{% for f in pending_out %}
+<div class="card">
+  <div style="font-weight:600">{{ f.receiver.username }}</div>
+  <div style="font-size:.75rem;color:var(--c-sub)">承認待ち</div>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- 友達一覧 -->
+<p class="section-title">友達 {{ friends|length }}人</p>
+{% if friends %}
+{% for u in friends %}
+<div class="card" style="display:flex;align-items:center;justify-content:space-between">
+  <div>
+    <div style="font-weight:600">{{ u.username }}</div>
+    <div style="font-size:.75rem;color:var(--c-sub)">{{ u.email }}</div>
+  </div>
+  <form method="post" action="{{ url_for('friends.remove', user_id=u.id) }}"
+        onsubmit="return confirm('友達を削除しますか？')">
+    <button type="submit" class="btn btn-ghost btn-sm">削除</button>
+  </form>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <p>まだ友達がいません</p>
+  <a href="{{ url_for('friends.search') }}" class="btn btn-primary" style="margin-top:16px">友達を探す</a>
+</div>
+{% endif %}
+
+{% endblock %}

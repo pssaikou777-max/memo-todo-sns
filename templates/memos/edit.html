@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}{{ '編集' if memo else 'メモを作成' }}{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+  {% if memo %}
+  <a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 詳細</a>
+  {% else %}
+  <a href="{{ url_for('memos.list_memos') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 一覧</a>
+  {% endif %}
+  <h1 style="font-size:1rem;font-weight:700">{{ '編集' if memo else 'メモを作成' }}</h1>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+  <div class="form-group">
+    <label for="title">タイトル（任意）</label>
+    <input class="form-control" type="text" id="title" name="title"
+           value="{{ memo.title or '' if memo else '' }}" maxlength="200"
+           placeholder="空欄の場合は本文の先頭から自動生成">
+  </div>
+
+  <div class="form-group">
+    <label for="body">本文</label>
+    <textarea class="form-control" id="body" name="body"
+              placeholder="ここに書く...">{{ memo.body or '' if memo else '' }}</textarea>
+  </div>
+
+  <!-- 既存画像（編集時） -->
+  {% if memo and memo.images.count() > 0 %}
+  <div class="form-group">
+    <label>添付済み画像</label>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      {% for img in memo.images %}
+      <div style="position:relative">
+        <img src="{{ url_for('static', filename='uploads/' ~ img.thumb_name) }}"
+             alt="画像"
+             style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--c-border)"
+             loading="lazy">
+        <form method="post"
+              action="{{ url_for('memos.delete_image', image_id=img.id) }}"
+              style="position:absolute;top:2px;right:2px"
+              onsubmit="return confirm('この画像を削除しますか？')">
+          <button type="submit"
+                  style="background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer">✕</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="form-group">
+    <label for="images">画像を追加</label>
+    <input class="form-control" type="file" id="images" name="images"
+           multiple accept="image/*" style="padding:6px">
+  </div>
+
+  <div class="form-group">
+    <label for="folder_id">フォルダ</label>
+    <select class="form-control" id="folder_id" name="folder_id">
+      <option value="">未分類</option>
+      {% for f in folders %}
+      <option value="{{ f.id }}"
+        {{ 'selected' if memo and memo.folder_id == f.id }}>
+        📁 {{ f.name }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if groups %}
+  <div class="form-group">
+    <label>グループ</label>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      {% set current_group_ids = memo.groups.all()|map(attribute='id')|list if memo else [] %}
+      {% for g in groups %}
+      <label style="display:flex;align-items:center;gap:6px;font-size:.875rem;font-weight:normal">
+        <input type="checkbox" name="group_ids" value="{{ g.id }}"
+               {{ 'checked' if g.id in current_group_ids }}>
+        {{ g.name }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="form-group">
+    <label for="visibility">公開設定</label>
+    <select class="form-control" id="visibility" name="visibility">
+      <option value="private"  {{ 'selected' if not memo or memo.visibility == 'private' }}>自分のみ</option>
+      <option value="friends"  {{ 'selected' if memo and memo.visibility == 'friends' }}>友達</option>
+      <option value="public"   {{ 'selected' if memo and memo.visibility == 'public' }}>全体公開</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full">
+    {{ '更新する' if memo else '保存する' }}
+  </button>
+</form>
+
+{% endblock %}
