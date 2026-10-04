@@ -10,9 +10,12 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 # ローカルでは SQLite にフォールバック
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
-    # psycopg2 は postgresql:// が必要（postgres:// は旧形式）
+    # postgres:// → postgresql:// に統一（Render等の旧形式対応）
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    # postgresql:// → postgresql+psycopg2:// に変換（psycopg2ドライバ指定）
+    if DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
 else:
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, "memo_todo_sns.db")
@@ -21,6 +24,8 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ENGINE_OPTIONS = {
     "pool_pre_ping": True,
     "pool_recycle": 300,
+    # Supabase Session Pooler はプリペアドステートメント非対応
+    "connect_args": {"options": "-c statement_timeout=10000"},
 }
 
 # ── 画像アップロード ───────────────────────────────────────────
