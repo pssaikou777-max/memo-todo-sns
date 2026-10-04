@@ -33,7 +33,7 @@
     {% if memo.body %}
     <div class="card-body">{{ memo.body[:80] }}</div>
     {% endif %}
-    {% set thumb = memo.images.first() %}
+    {% set thumb = memo.images[0] if memo.images else none %}
     {% if thumb %}
     <div class="thumb-row">
       <img src="{{ url_for('static', filename='uploads/' ~ thumb.thumb_name) }}"
@@ -57,7 +57,7 @@
   {% if memo.body %}
   <div class="card-body">{{ memo.body[:80] }}</div>
   {% endif %}
-  {% set thumb = memo.images.first() %}
+  {% set thumb = memo.images[0] if memo.images else none %}
   {% if thumb %}
   <div class="thumb-row">
     <img src="{{ url_for('static', filename='uploads/' ~ thumb.thumb_name) }}"

@@ -26,13 +26,14 @@
   </div>
 
   <!-- 既存画像（編集時） -->
-  {% if memo and memo.images.count() > 0 %}
+  {% set edit_images = memo.images.all() if memo else [] %}
+  {% if edit_images %}
   <div class="form-group">
     <label>添付済み画像</label>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      {% for img in memo.images %}
+      {% for img in edit_images %}
       <div style="position:relative">
-        <img src="{{ url_for('static', filename='uploads/' ~ img.thumb_name) }}"
+        <img src="{{ image_url(img.thumb_name) }}"
              alt="画像"
              style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--c-border)"
              loading="lazy">
