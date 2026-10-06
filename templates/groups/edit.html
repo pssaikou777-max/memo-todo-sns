@@ -2,7 +2,7 @@
 {% block title %}{{ 'グループ編集' if group else 'グループ作成' }}{% endblock %}
 {% block page_title %}{{ 'グループ編集' if group else 'グループ作成' }}{% endblock %}
 {% block back_btn %}
-  <a href="{{ url_for('groups_bp.list_groups') }}" class="back-btn">‹ グループ</a>
+  <a href="{{ url_for('groups.list_groups') }}" class="back-btn">‹ グループ</a>
 {% endblock %}
 {% block content %}
 
