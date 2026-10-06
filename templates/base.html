@@ -11,48 +11,32 @@
 <body>
 
 {% if current_user.is_authenticated %}
-<!-- ── PC サイドナビ ──────────────────────────────── -->
-<nav class="side-nav">
-  <div class="logo">メモ×todo×sns</div>
-  <a href="{{ url_for('timeline.home') }}"   class="{{ 'active' if request.endpoint == 'timeline.home' }}">
-    <span class="nav-icon"></span> ホーム
-  </a>
-  <a href="{{ url_for('memos.list_memos') }}" class="{{ 'active' if request.blueprint == 'memos' }}">
-    <span class="nav-icon"></span> メモ
-  </a>
-  <a href="{{ url_for('todos.list_todos') }}" class="{{ 'active' if request.blueprint == 'todos' }}">
-    <span class="nav-icon"></span> TODO
-  </a>
-  <a href="{{ url_for('friends.list_friends') }}" class="{{ 'active' if request.blueprint == 'friends' }}">
-    <span class="nav-icon"></span> 友達
-  </a>
-  <a href="{{ url_for('folders.list_folders') }}" class="{{ 'active' if request.blueprint == 'folders' }}">
-    <span class="nav-icon"></span> フォルダ
-  </a>
-  <a href="{{ url_for('memos.search') }}" class="{{ 'active' if request.endpoint == 'memos.search' }}">
-    <span class="nav-icon"></span> 検索
-  </a>
-  <hr style="margin:12px 20px;border:none;border-top:1px solid var(--c-border)">
-  <a href="{{ url_for('auth.logout') }}">
-    <span class="nav-icon"></span> ログアウト
-  </a>
-</nav>
-{% endif %}
-
-<!-- ── ヘッダー ──────────────────────────────────── -->
-<header class="app-header">
-  <span class="logo">メモ×todo×sns</span>
-  {% if current_user.is_authenticated %}
-  <div class="header-right">
-    <span style="font-size:.8rem;color:var(--c-sub)">{{ current_user.username }}</span>
+<!-- ── アプリバー（上部） ──────────────────────────── -->
+<header class="app-bar">
+  <div class="app-bar-left">
+    {% block back_btn %}{% endblock %}
   </div>
-  {% endif %}
+  <div class="app-bar-title">{% block page_title %}メモ×todo×sns{% endblock %}</div>
+  <div class="app-bar-right">
+    <a href="{{ url_for('auth.profile') }}" class="avatar-btn"
+       style="background:{{ current_user.avatar_color }}"
+       title="マイページ">
+      {{ current_user.show_name[0] | upper }}
+    </a>
+  </div>
 </header>
+{% else %}
+<header class="app-bar">
+  <div class="app-bar-left"></div>
+  <div class="app-bar-title">メモ×todo×sns</div>
+  <div class="app-bar-right"></div>
+</header>
+{% endif %}
 
 <!-- ── フラッシュ ────────────────────────────────── -->
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-  <ul class="flash-list container">
+  <ul class="flash-list">
     {% for cat, msg in messages %}
     <li class="{{ cat }}">{{ msg }}</li>
     {% endfor %}
@@ -61,24 +45,39 @@
 {% endwith %}
 
 <!-- ── メインコンテンツ ──────────────────────────── -->
-<main class="container" style="padding-top:12px">
-  {% block content %}{% endblock %}
+<main class="page-content">
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
 </main>
 
 {% if current_user.is_authenticated %}
-<!-- ── スマホ 下部ナビゲーション ─────────────────── -->
+<!-- ── 下部ナビゲーション ─────────────────────────── -->
 <nav class="bottom-nav">
-  <a href="{{ url_for('timeline.home') }}"    class="{{ 'active' if request.endpoint == 'timeline.home' }}">
-    ホーム
+  <a href="{{ url_for('timeline.home') }}"
+     class="bnav-item {{ 'active' if request.endpoint == 'timeline.home' }}">
+    <span class="bnav-icon">🏠</span>
+    <span class="bnav-label">ホーム</span>
   </a>
-  <a href="{{ url_for('memos.list_memos') }}"  class="{{ 'active' if request.blueprint == 'memos' }}">
-    メモ
+  <a href="{{ url_for('memos.list_memos') }}"
+     class="bnav-item {{ 'active' if request.blueprint == 'memos' }}">
+    <span class="bnav-icon">📝</span>
+    <span class="bnav-label">メモ</span>
   </a>
-  <a href="{{ url_for('todos.list_todos') }}"  class="{{ 'active' if request.blueprint == 'todos' }}">
-    TODO
+  <a href="{{ url_for('todos.list_todos') }}"
+     class="bnav-item {{ 'active' if request.blueprint == 'todos' }}">
+    <span class="bnav-icon">✅</span>
+    <span class="bnav-label">TODO</span>
   </a>
-  <a href="{{ url_for('friends.list_friends') }}" class="{{ 'active' if request.blueprint == 'friends' }}">
-    友達
+  <a href="{{ url_for('friends.list_friends') }}"
+     class="bnav-item {{ 'active' if request.blueprint == 'friends' }}">
+    <span class="bnav-icon">👥</span>
+    <span class="bnav-label">友達</span>
+  </a>
+  <a href="{{ url_for('auth.profile') }}"
+     class="bnav-item {{ 'active' if request.endpoint == 'auth.profile' }}">
+    <span class="bnav-icon">👤</span>
+    <span class="bnav-label">マイページ</span>
   </a>
 </nav>
 {% endif %}

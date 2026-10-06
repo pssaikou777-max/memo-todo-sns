@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {% block title %}友達を探す{% endblock %}
+{% block page_title %}友達を探す{% endblock %}
+{% block back_btn %}
+  <a href="{{ url_for('friends.list_friends') }}" class="back-btn">‹ 友達</a>
+{% endblock %}
 {% block content %}
-
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-  <a href="{{ url_for('friends.list_friends') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 友達</a>
-  <h1 style="font-size:1rem;font-weight:700">友達を探す</h1>
-</div>
 
 <form method="get" class="search-bar">
   <input type="search" name="q" value="{{ q }}" placeholder="ユーザー名 or メールアドレス">

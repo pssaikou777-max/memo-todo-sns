@@ -5,6 +5,11 @@ from models import User
 
 auth = Blueprint("auth", __name__, url_prefix="/auth")
 
+AVATAR_COLORS = [
+    "#4a7cf7", "#e53935", "#43a047", "#fb8c00",
+    "#8e24aa", "#00897b", "#f4511e", "#1e88e5",
+]
+
 
 @auth.route("/register", methods=["GET", "POST"])
 def register():
@@ -63,8 +68,28 @@ def login():
     return render_template("auth/login.html")
 
 
-@auth.route("/logout")
+@auth.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("auth.login"))
+
+
+@auth.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    if request.method == "POST":
+        display_name = request.form.get("display_name", "").strip()
+        bio          = request.form.get("bio", "").strip()
+        avatar_color = request.form.get("avatar_color", "").strip()
+
+        current_user.display_name = display_name or None
+        current_user.bio          = bio or None
+        if avatar_color in AVATAR_COLORS:
+            current_user.avatar_color = avatar_color
+        db.session.commit()
+        flash("プロフィールを更新しました。", "success")
+        return redirect(url_for("auth.profile"))
+
+    return render_template("auth/profile.html",
+                           avatar_colors=AVATAR_COLORS)

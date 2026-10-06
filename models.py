@@ -21,6 +21,14 @@ class User(UserMixin, db.Model):
     email         = db.Column(db.String(120), nullable=False, unique=True)
     password_hash = db.Column(db.String(256), nullable=False)
     created_at    = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    # プロフィール
+    display_name  = db.Column(db.String(64),  nullable=True)   # 表示名（空なら username を使用）
+    bio           = db.Column(db.String(200), nullable=True)   # 一言
+    avatar_color  = db.Column(db.String(16),  nullable=False, default="#4a7cf7")  # アバター背景色
+
+    @property
+    def show_name(self) -> str:
+        return self.display_name or self.username
 
     memos   = db.relationship("Memo",   backref="owner", lazy="dynamic", cascade="all, delete-orphan")
     folders = db.relationship("Folder", backref="owner", lazy="dynamic", cascade="all, delete-orphan")
@@ -120,6 +128,7 @@ class MemoImage(db.Model):
 
 
 # ─── Todo ─────────────────────────────────────────────────────────
+# repeat_type: none / daily / weekly / monthly
 class Todo(db.Model):
     __tablename__ = "todos"
 
@@ -128,9 +137,33 @@ class Todo(db.Model):
     title        = db.Column(db.String(200), nullable=False)
     description  = db.Column(db.Text, nullable=True)
     due_date     = db.Column(db.Date, nullable=True)
+    due_time     = db.Column(db.Time, nullable=True)           # 時間設定（任意）
     completed    = db.Column(db.Boolean, nullable=False, default=False)
     created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = db.Column(db.DateTime, nullable=True)
+    # ツリー構造
+    parent_id    = db.Column(db.Integer, db.ForeignKey("todos.id"), nullable=True)
+    order_index  = db.Column(db.Integer, nullable=False, default=0)
+    # 繰り返し
+    repeat_type  = db.Column(db.String(16), nullable=False, default="none")
+    # none / daily / weekly / monthly
+
+    children = db.relationship(
+        "Todo",
+        backref=db.backref("parent", remote_side="Todo.id"),
+        lazy="dynamic",
+        cascade="all",
+        order_by="Todo.order_index",
+    )
+
+    @property
+    def is_root(self) -> bool:
+        return self.parent_id is None
+
+    @property
+    def all_children_done(self) -> bool:
+        kids = list(self.children)
+        return len(kids) == 0 or all(c.completed for c in kids)
 
     def __repr__(self) -> str:
         return f"<Todo {self.title}>"

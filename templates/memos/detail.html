@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ memo.display_title }}{% endblock %}
+{% block page_title %}{{ memo.display_title[:20] }}{% endblock %}
+{% block back_btn %}
+  <a href="{{ url_for('memos.list_memos') }}" class="back-btn">‹ メモ</a>
+{% endblock %}
 {% block content %}
 
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-  <a href="{{ url_for('memos.list_memos') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 一覧</a>
+<div style="margin-bottom:6px">
   <span class="vis-badge vis-{{ memo.visibility }}">
     {{ '自分のみ' if memo.visibility == 'private' else ('友達' if memo.visibility == 'friends' else '公開') }}
   </span>

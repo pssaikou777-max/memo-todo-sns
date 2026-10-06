@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ group.name }}{% endblock %}
+{% block page_title %}{{ group.name }}{% endblock %}
+{% block back_btn %}
+  <a href="{{ url_for('groups_bp.list_groups') }}" class="back-btn">‹ グループ</a>
+{% endblock %}
 {% block content %}
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-  <a href="{{ url_for('groups.list_groups') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← グループ</a>
   <h1 style="font-size:1rem;font-weight:700">{{ group.name }}</h1>
   <a href="{{ url_for('groups.edit', group_id=group.id) }}" class="btn btn-ghost btn-sm">編集</a>
 </div>

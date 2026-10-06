@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ 'グループ編集' if group else 'グループ作成' }}{% endblock %}
+{% block page_title %}{{ 'グループ編集' if group else 'グループ作成' }}{% endblock %}
+{% block back_btn %}
+  <a href="{{ url_for('groups_bp.list_groups') }}" class="back-btn">‹ グループ</a>
+{% endblock %}
 {% block content %}
-
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-  <a href="{{ url_for('groups.list_groups') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← グループ</a>
-  <h1 style="font-size:1rem;font-weight:700">{{ 'グループ編集' if group else 'グループ作成' }}</h1>
-</div>
 
 <form method="post">
   <div class="form-group">

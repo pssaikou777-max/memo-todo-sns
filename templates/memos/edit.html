@@ -1,15 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ '編集' if memo else 'メモを作成' }}{% endblock %}
-{% block content %}
-
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+{% block page_title %}{{ '編集' if memo else 'メモを作成' }}{% endblock %}
+{% block back_btn %}
   {% if memo %}
-  <a href="{{ url_for('memos.detail', memo_id=memo.id) }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 詳細</a>
+  <a href="{{ url_for('memos.detail', memo_id=memo.id) }}" class="back-btn">‹ 詳細</a>
   {% else %}
-  <a href="{{ url_for('memos.list_memos') }}" style="color:var(--c-sub);text-decoration:none;font-size:.9rem">← 一覧</a>
+  <a href="{{ url_for('memos.list_memos') }}" class="back-btn">‹ メモ</a>
   {% endif %}
-  <h1 style="font-size:1rem;font-weight:700">{{ '編集' if memo else 'メモを作成' }}</h1>
-</div>
+{% endblock %}
+{% block content %}
 
 <form method="post" enctype="multipart/form-data">
   <div class="form-group">

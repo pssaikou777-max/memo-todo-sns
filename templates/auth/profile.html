@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}マイページ{% endblock %}
+{% block page_title %}マイページ{% endblock %}
+
+{% block content %}
+
+<!-- ── プロフィールヒーロー ── -->
+<div class="profile-hero">
+  <div class="profile-avatar"
+       style="background:{{ current_user.avatar_color }}">
+    {{ current_user.show_name[0] | upper }}
+  </div>
+  <div class="profile-name">{{ current_user.show_name }}</div>
+  {% if current_user.bio %}
+  <div class="profile-bio">{{ current_user.bio }}</div>
+  {% endif %}
+  <div style="font-size:.72rem;color:var(--c-sub)">@{{ current_user.username }}</div>
+</div>
+
+<!-- ── 編集フォーム ── -->
+<div class="card" style="margin-bottom:16px">
+  <p class="section-title" style="padding-top:0">プロフィール編集</p>
+  <form method="post">
+
+    <div class="form-group">
+      <label for="display_name">表示名</label>
+      <input class="form-control" type="text" id="display_name" name="display_name"
+             placeholder="{{ current_user.username }}"
+             value="{{ current_user.display_name or '' }}"
+             maxlength="64">
+    </div>
+
+    <div class="form-group">
+      <label for="bio">一言メモ（任意）</label>
+      <input class="form-control" type="text" id="bio" name="bio"
+             placeholder="ひとこと"
+             value="{{ current_user.bio or '' }}"
+             maxlength="200">
+    </div>
+
+    <div class="form-group">
+      <label>アイコンカラー</label>
+      <div class="avatar-color-grid">
+        {% for color in avatar_colors %}
+        <button type="submit" name="avatar_color" value="{{ color }}"
+                class="avatar-color-swatch {{ 'selected' if current_user.avatar_color == color }}"
+                style="background:{{ color }}"
+                title="{{ color }}"></button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-full">保存する</button>
+  </form>
+</div>
+
+<!-- ── その他メニュー ── -->
+<a href="{{ url_for('folders.list_folders') }}" class="list-cell">
+  <span class="list-cell-icon">📁</span>
+  <span class="list-cell-text">フォルダ管理</span>
+  <span class="list-cell-arrow">›</span>
+</a>
+<a href="{{ url_for('memos.search') }}" class="list-cell">
+  <span class="list-cell-icon">🔍</span>
+  <span class="list-cell-text">メモ検索</span>
+  <span class="list-cell-arrow">›</span>
+</a>
+<a href="{{ url_for('groups_bp.list_groups') }}" class="list-cell">
+  <span class="list-cell-icon">🏷️</span>
+  <span class="list-cell-text">グループ</span>
+  <span class="list-cell-arrow">›</span>
+</a>
+
+<hr class="divider">
+
+<form method="post" action="{{ url_for('auth.logout') }}">
+  <button type="submit" class="list-cell danger"
+          style="width:100%;border:none;background:var(--c-surface);cursor:pointer;text-align:left">
+    <span class="list-cell-icon">🚪</span>
+    <span class="list-cell-text">ログアウト</span>
+  </button>
+</form>
+
+{% endblock %}

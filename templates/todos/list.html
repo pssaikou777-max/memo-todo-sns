@@ -1,85 +1,147 @@
 {% extends "base.html" %}
 {% block title %}TODO{% endblock %}
+{% block page_title %}TODO{% endblock %}
 {% block content %}
 
-<h1 style="font-size:1.1rem;font-weight:700;margin-bottom:16px">TODO</h1>
-
-{% macro todo_row(t) %}
-<div class="todo-item">
-  <form method="post" action="{{ url_for('todos.complete', todo_id=t.id) }}">
-    <button type="submit" class="todo-check" title="完了にする"></button>
-  </form>
-  <div style="flex:1">
-    <div class="todo-title">
-      <a href="{{ url_for('todos.edit', todo_id=t.id) }}"
-         style="text-decoration:none;color:inherit">{{ t.title }}</a>
-    </div>
-    {% if t.due_date %}
-    <div class="todo-due {{ 'overdue' if t.due_date < today }}">
-      {{ t.due_date.strftime('%Y/%m/%d') }}
-    </div>
-    {% endif %}
+<div class="todo-header">
+  <h1 style="font-size:1.1rem;font-weight:700">TODO</h1>
+  <div class="todo-view-toggle">
+    <a href="{{ url_for('todos.list_todos', view='tree') }}"
+       class="view-btn {{ 'active' if view == 'tree' }}">ツリー</a>
+    <a href="{{ url_for('todos.list_todos', view='calendar') }}"
+       class="view-btn {{ 'active' if view == 'calendar' }}">カレンダー</a>
   </div>
-  <form method="post" action="{{ url_for('todos.delete', todo_id=t.id) }}"
-        onsubmit="return confirm('削除しますか？')">
-    <button type="submit" class="btn btn-ghost btn-sm">🗑</button>
-  </form>
+</div>
+
+{# ═══════════════════════════ ツリービュー ════════════════════════════ #}
+{% if view == 'tree' %}
+
+{# ── ツリー再帰マクロ ───────────────────────────────────────────── #}
+{% macro todo_node(t, depth) %}
+<div class="tree-node depth-{{ [depth, 4]|min }}" id="tnode-{{ t.id }}">
+  <div class="tree-row {% if t.completed %}todo-done{% else %}todo-pending{% endif %}">
+
+    {# 完了ボタン #}
+    <form method="post" action="{{ url_for('todos.complete', todo_id=t.id) }}" style="margin:0">
+      <button type="submit" class="todo-check {% if t.completed %}done{% endif %}"
+              title="{{ '完了済み' if t.completed else '完了にする' }}"
+              {% if t.completed %}disabled{% endif %}></button>
+    </form>
+
+    {# タイトル・期日 #}
+    <div class="tree-content">
+      <a href="{{ url_for('todos.edit', todo_id=t.id) }}" class="tree-title">
+        {% if t.completed %}✅ {{ t.title }}{% else %}{{ t.title }}{% endif %}
+      </a>
+      <div class="tree-meta">
+        {% if t.due_date %}
+          <span class="tree-date {% if not t.completed and t.due_date < today %}overdue{% endif %}">
+            📅 {{ t.due_date.strftime('%m/%d') }}
+            {% if t.due_time %}{{ t.due_time.strftime('%H:%M') }}{% endif %}
+          </span>
+        {% endif %}
+        {% if t.repeat_type != 'none' %}
+          <span class="repeat-badge">🔁 {{ repeat_labels[t.repeat_type] }}</span>
+        {% endif %}
+        {% if t.description %}
+          <span class="tree-desc">{{ t.description[:40] }}{% if t.description|length > 40 %}…{% endif %}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# アクション #}
+    <div class="tree-actions">
+      <a href="{{ url_for('todos.new', parent_id=t.id) }}"
+         class="btn btn-ghost btn-xs" title="サブタスク追加">＋</a>
+      {% if t.completed %}
+      <form method="post" action="{{ url_for('todos.uncomplete', todo_id=t.id) }}" style="margin:0">
+        <button type="submit" class="btn btn-ghost btn-xs" title="未完了に戻す">↩</button>
+      </form>
+      {% endif %}
+      <form method="post" action="{{ url_for('todos.delete', todo_id=t.id) }}"
+            onsubmit="return confirm('削除しますか？（サブタスクも全削除）')" style="margin:0">
+        <button type="submit" class="btn btn-ghost btn-xs">🗑</button>
+      </form>
+    </div>
+  </div>
+
+  {# 子タスク再帰 #}
+  {% if t.kids %}
+  <div class="tree-children">
+    {% for child in t.kids %}
+      {{ todo_node(child, depth + 1) }}
+    {% endfor %}
+  </div>
+  {% endif %}
 </div>
 {% endmacro %}
 
-{% if overdue_todos %}
-<p class="section-title" style="color:var(--c-danger)">期限切れ</p>
-<div style="margin-bottom:16px">
-  {% for t in overdue_todos %}{{ todo_row(t) }}{% endfor %}
-</div>
-{% endif %}
-
-{% if today_todos %}
-<p class="section-title">今日</p>
-<div style="margin-bottom:16px">
-  {% for t in today_todos %}{{ todo_row(t) }}{% endfor %}
-</div>
-{% endif %}
-
-{% if week_todos %}
-<p class="section-title">今後</p>
-<div style="margin-bottom:16px">
-  {% for t in week_todos %}{{ todo_row(t) }}{% endfor %}
-</div>
-{% endif %}
-
-{% if nodate_todos %}
-<p class="section-title">期限なし</p>
-<div style="margin-bottom:16px">
-  {% for t in nodate_todos %}{{ todo_row(t) }}{% endfor %}
-</div>
-{% endif %}
-
-{% if not overdue_todos and not today_todos and not week_todos and not nodate_todos %}
-<div class="empty-state">
-  <p>TODOがありません</p>
-</div>
-{% endif %}
-
-{% if done_todos %}
-<p class="section-title">完了済み（直近20件）</p>
-<div style="margin-bottom:16px">
-  {% for t in done_todos %}
-  <div class="todo-item" style="opacity:.55">
-    <form method="post" action="{{ url_for('todos.uncomplete', todo_id=t.id) }}">
-      <button type="submit" class="todo-check done" title="未完了に戻す"></button>
-    </form>
-    <div style="flex:1">
-      <div class="todo-title" style="text-decoration:line-through">{{ t.title }}</div>
-    </div>
-    <form method="post" action="{{ url_for('todos.delete', todo_id=t.id) }}"
-          onsubmit="return confirm('削除しますか？')">
-      <button type="submit" class="btn btn-ghost btn-sm">🗑</button>
-    </form>
+{# ── ルートTODOを出力 ─────────────────────────────────────────── #}
+{% if tree %}
+  <div class="tree-list">
+    {% for root in tree %}
+      {{ todo_node(root, 0) }}
+    {% endfor %}
   </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📝</div>
+    <p>TODOがありません</p>
+  </div>
+{% endif %}
+
+{# ═════════════════════════ カレンダービュー ═════════════════════════ #}
+{% elif view == 'calendar' %}
+
+{% set month_names = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'] %}
+{% set weekdays   = ['月','火','水','木','金','土','日'] %}
+
+<div class="cal-nav">
+  <a href="{{ url_for('todos.list_todos', view='calendar',
+             year=cal_year if cal_month > 1 else cal_year - 1,
+             month=(cal_month - 1) if cal_month > 1 else 12) }}"
+     class="cal-nav-btn">‹</a>
+  <span class="cal-title">{{ cal_year }}年 {{ month_names[cal_month - 1] }}</span>
+  <a href="{{ url_for('todos.list_todos', view='calendar',
+             year=cal_year if cal_month < 12 else cal_year + 1,
+             month=(cal_month + 1) if cal_month < 12 else 1) }}"
+     class="cal-nav-btn">›</a>
+</div>
+
+<div class="cal-grid">
+  {# 曜日ヘッダー #}
+  {% for wd in weekdays %}
+  <div class="cal-header-cell {% if loop.index == 7 %}cal-sun{% elif loop.index == 6 %}cal-sat{% endif %}">{{ wd }}</div>
+  {% endfor %}
+
+  {# 日付セル #}
+  {% for week in cal_weeks %}
+    {% for day_num in week %}
+    {% if day_num == 0 %}
+      <div class="cal-cell cal-empty"></div>
+    {% else %}
+      {% set cell_date = [cal_year, cal_month, day_num]|join('-') | string %}
+      {% set is_today = (cal_year == today.year and cal_month == today.month and day_num == today.day) %}
+      {% set loop_dow = loop.index0 %}  {# 0=月...5=土,6=日 #}
+      <div class="cal-cell {% if is_today %}cal-today{% endif %} {% if loop.index == 7 %}cal-sun{% elif loop.index == 6 %}cal-sat{% endif %}">
+        <div class="cal-day-num">{{ day_num }}</div>
+        {# その日のTODO #}
+        {% set d = (cal_year|string + '-' + '%02d'|format(cal_month) + '-' + '%02d'|format(day_num)) %}
+        {% for t in cal_map.get(today.__class__(cal_year, cal_month, day_num), []) %}
+          <div class="cal-todo-item {% if t.completed %}cal-done{% else %}cal-pending{% endif %}">
+            {{ t.title[:10] }}{% if t.title|length > 10 %}…{% endif %}
+          </div>
+        {% endfor %}
+        <a href="{{ url_for('todos.new') }}?due_date={{ cal_year }}-{{ '%02d'|format(cal_month) }}-{{ '%02d'|format(day_num) }}"
+           class="cal-add" title="この日にTODO追加">＋</a>
+      </div>
+    {% endif %}
+    {% endfor %}
   {% endfor %}
 </div>
+
 {% endif %}
+{# ═══════════════════════════════════════════════════════════════════ #}
 
 <a href="{{ url_for('todos.new') }}" class="fab" title="TODOを追加">＋</a>
 {% endblock %}
