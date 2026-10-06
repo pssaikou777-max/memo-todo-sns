@@ -18,7 +18,79 @@
 
 {# ── ツリー再帰マクロ ───────────────────────────────────────────── #}
 {% macro todo_node(t, depth) %}
+{#
+  メインタスク = depth==0 かつ サブタスク（kids）あり
+    → 先頭に進捗リング（SVG）、完了ボタンなし
+  サブタスク / サブなしタスク
+    → 通常の〇完了ボタン
+#}
+{% set has_kids = t.kids | length > 0 %}
+{% set is_main  = (depth == 0) %}
+
+{# 進捗計算（メインタスク用） #}
+{% if is_main %}
+  {% set total = t.kids | length %}
+  {% set done  = t.kids | selectattr('completed') | list | length %}
+  {% set pct   = (done / total * 100) | int if total > 0 else 0 %}
+  {# SVG 円弧パラメータ（r=9, circumference≈56.5） #}
+  {% set circum = 56.5 %}
+  {% set dash   = (pct / 100 * circum) | round(1) %}
+  {% set all_done = (done == total and total > 0) %}
+{% endif %}
+
 <div class="tree-node depth-{{ [depth, 4]|min }}" id="tnode-{{ t.id }}">
+  {% if is_main %}
+  {# ── メインタスク行 ────────────────────── #}
+  <div class="tree-row {{ 'todo-done' if all_done else 'todo-pending' }}">
+
+    {# 進捗リング（クリック不可） #}
+    <div class="progress-ring" title="{{ done }}/{{ total }} 完了">
+      <svg width="28" height="28" viewBox="0 0 28 28">
+        <circle cx="14" cy="14" r="9" fill="none"
+                stroke="var(--c-border)" stroke-width="2.5"/>
+        <circle cx="14" cy="14" r="9" fill="none"
+                stroke="{{ '#43a047' if all_done else '#4a7cf7' }}"
+                stroke-width="2.5"
+                stroke-dasharray="{{ dash }} {{ circum }}"
+                stroke-dashoffset="0"
+                stroke-linecap="round"
+                transform="rotate(-90 14 14)"/>
+      </svg>
+      <span class="ring-pct" style="color:{{ '#43a047' if all_done else '#4a7cf7' }}">{{ pct }}%</span>
+    </div>
+
+    {# タイトル・期日 #}
+    <div class="tree-content">
+      <a href="{{ url_for('todos.edit', todo_id=t.id) }}" class="tree-title">
+        {{ t.title }}
+      </a>
+      <div class="tree-meta">
+        {% if t.due_date %}
+          <span class="tree-date {% if not all_done and t.due_date < today %}overdue{% endif %}">
+            📅 {{ t.due_date.strftime('%m/%d') }}
+            {% if t.due_time %}{{ t.due_time.strftime('%H:%M') }}{% endif %}
+          </span>
+        {% endif %}
+        {% if t.repeat_type != 'none' %}
+          <span class="repeat-badge">🔁 {{ repeat_labels[t.repeat_type] }}</span>
+        {% endif %}
+        <span class="sub-count">{{ done }}/{{ total }}</span>
+      </div>
+    </div>
+
+    {# アクション #}
+    <div class="tree-actions">
+      <a href="{{ url_for('todos.new', parent_id=t.id) }}"
+         class="btn btn-ghost btn-xs" title="サブタスク追加">＋</a>
+      <form method="post" action="{{ url_for('todos.delete', todo_id=t.id) }}"
+            onsubmit="return confirm('削除しますか？（サブタスクも全削除）')" style="margin:0">
+        <button type="submit" class="btn btn-ghost btn-xs">🗑</button>
+      </form>
+    </div>
+  </div>
+
+  {% else %}
+  {# ── サブタスク / サブなしタスク行 ────── #}
   <div class="tree-row {% if t.completed %}todo-done{% else %}todo-pending{% endif %}">
 
     {# 完了ボタン #}
@@ -64,6 +136,7 @@
       </form>
     </div>
   </div>
+  {% endif %}
 
   {# 子タスク再帰 #}
   {% if t.kids %}
