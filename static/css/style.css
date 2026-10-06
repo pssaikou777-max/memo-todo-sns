@@ -309,6 +309,21 @@ select.form-control {
 .btn-sm        { padding: 8px 14px; font-size: 0.82rem; border-radius: 8px; }
 .btn-xs        { padding: 4px 10px; font-size: 0.72rem; border-radius: 6px; }
 
+/* ═══ 進捗リング（メインタスク用） ═════════════════ */
+.progress-ring {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.ring-pct {
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.01em;
+  pointer-events: none;
+}
+
 /* ═══ TODO チェックボックス ═════════════════════════ */
 .todo-check {
   width: 24px;
@@ -401,6 +416,7 @@ select.form-control {
 .tree-date   { font-size: 0.72rem; color: var(--c-sub); }
 .tree-date.overdue { color: var(--c-danger); font-weight: 600; }
 .tree-desc   { font-size: 0.72rem; color: var(--c-sub); }
+.sub-count   { font-size: 0.68rem; color: var(--c-sub); font-weight: 600; }
 .repeat-badge {
   font-size: 0.68rem;
   padding: 1px 7px;
